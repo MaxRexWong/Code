@@ -1,0 +1,29 @@
+import random
+
+def game():
+    num = random.sample(range(1,10),4)
+    while True:
+        try:
+            guess = int(input('Enter four numbers'))
+            if guess > 9999:
+                print('Invalid input!')
+                continue
+        except ValueError:
+            print('Invalid input! ')
+            continue
+        guess = list(str(guess))
+        i = 0
+        cow = 0
+        bull = 0
+        for elem in guess:
+            if int(elem) == num[i]:
+                cow += 1
+            elif int(elem) in num:
+                bull += 1
+            i += 1
+        print(f'{cow} cows {bull} bulls')
+        if cow == 4:
+            break
+
+
+game()
