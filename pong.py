@@ -1,120 +1,118 @@
-import pygame
-import random
+import pygame, random
+
 
 FPS = 60
-WIDTH = 600
-HEIGHT = 500
-SCREEN_COL = (0, 0 ,0)
-PLAYER_COL = (255, 255, 255)
+WIDTH, HEIGHT = 600, 500
+SCR_COL = (0, 0, 0)
+OBJ_COL = (255, 255, 255)
 PLAYER_SIZE = (10, 80)
-BALL_COL = (255, 255, 255)
 BALL_SIZE = (15, 15)
+
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Pong game")
 clock = pygame.time.Clock()
+
 
 class Player1(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface(PLAYER_SIZE)
-        self.image.fill(PLAYER_COL)
+        self.image.fill(OBJ_COL)
         self.rect = self.image.get_rect()
-        self.rect.left = 30
-        self.rect.centery = (HEIGHT/2)
-        self.speedy = 6
+        self.rect.center = (30, HEIGHT/2)
+        self.speed = 6
 
     def update(self):
-         key = pygame.key.get_pressed()
-         if key[pygame.K_w]:
-             self.rect.y -= self.speedy
-         if key[pygame.K_s]:
-             self.rect.y += self.speedy
-         
-         if self.rect.bottom > HEIGHT:
-             self.rect.bottom = HEIGHT
-         if self.rect.top < 0:
-             self.rect.top = 0
+        key = pygame.key.get_pressed()
+        if key[pygame.K_w]:
+            self.rect.y -= self.speed
+        if key[pygame.K_s]:
+            self.rect.y += self.speed
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > HEIGHT:
+            self.rect.bottom = HEIGHT
 
 class Player2(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface(PLAYER_SIZE)
-        self.image.fill(PLAYER_COL)
+        self.image.fill(OBJ_COL)
         self.rect = self.image.get_rect()
-        self.rect.right = WIDTH - 30
-        self.rect.centery = (HEIGHT/2)
-        self.speedy = 6
+        self.rect.center = (WIDTH - 30, HEIGHT/2)
+        self.speed = 6
 
     def update(self):
-         key = pygame.key.get_pressed()
-         if key[pygame.K_UP]:
-             self.rect.y -= self.speedy
-         if key[pygame.K_DOWN]:
-             self.rect.y += self.speedy
-         
-         if self.rect.bottom > HEIGHT:
-             self.rect.bottom = HEIGHT
-         if self.rect.top < 0:
-             self.rect.top = 0
+        key = pygame.key.get_pressed()
+        if key[pygame.K_UP]:
+            self.rect.y -= self.speed
+        if key[pygame.K_DOWN]:
+            self.rect.y += self.speed
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > HEIGHT:
+            self.rect.bottom = HEIGHT
 
 class Ball(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface(BALL_SIZE)
-        self.image.fill(BALL_COL)
+        self.image.fill(OBJ_COL)
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH/2, HEIGHT/2)
-        self.rect.x = random.randrange(260, 340)
-        self.rect.y = random.randrange(170, 330)
-        self.speedx = random.choice(list(range(-4, -1)) + list(range(1, 5)))
-        self.speedy = random.choice(list(range(-4, -1)) + list(range(1, 5)))
+        self.speedx = random.choice(list(range(-4,-1)) + list(range(2,5)))
+        self.speedy = random.choice(list(range(-4,-1)) + list(range(2,5)))
 
-    def update(self):
+    def update(self, hit1, hit2):
         self.rect.x += self.speedx
         self.rect.y += self.speedy
         if self.rect.top < 0 or self.rect.bottom > HEIGHT:
             self.speedy = self.speedy * -1
-            self.rect.y += self.speedy
-        if self.rect.left < 0:
-            self.rect.x = random.randrange(260, 340)
-            self.rect.y = random.randrange(170, 330)
-            self.speedx = random.choice(list(range(-4, -1)) + list(range(1, 5)))
-            self.speedy = random.choice(list(range(-4, -1)) + list(range(1, 5)))
-        if self.rect.right > WIDTH:
-            self.rect.x = random.randrange(260, 340)
-            self.rect.y = random.randrange(170, 330)
-            self.speedx = random.choice(list(range(-4, -1)) + list(range(1, 5)))
-            self.speedy = random.choice(list(range(-4, -1)) + list(range(1, 5)))
+        if self.rect.left < 0 or self.rect.right > WIDTH:
+            self.rect.center = (WIDTH/2, HEIGHT/2)
+            self.speedx = random.choice(list(range(-5,-2)) + list(range(3,6)))
+            self.speedy = random.choice(list(range(-5,-2)) + list(range(3,6)))
+        if hit1:
+            self.rect.x -= self.speedx * 2
+            self.speedx = random.randrange(4,9)
+        if hit2:
+            self.rect.x -= self.speedx * 2
+            self.speedx = random.randrange(-8,-3)
+    
 
-    def hit(self, players):
-        if self.rect.left == players:
-            self.speedx = self.speedx * -1
-            self.rect.x += self.speedx
+player1 = pygame.sprite.Group()
+player1.add(Player1())
+player2 = pygame.sprite.Group()
+player2.add(Player2())
+ball = pygame.sprite.Group()
+ball.add(Ball())
 
-
-all_sprite = pygame.sprite.Group()
-all_sprite.add(Player1(), Player2(), Ball())
-
-players = pygame.sprite.Group()
-players.add(Player1(), Player2())
-
-ball = Ball()
-
-while True:
+hit = False
+running = True
+while running:
     clock.tick(FPS)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
+            running = False
 
-
-    all_sprite.update()
-    hit = pygame.sprite.spritecollide(ball, all_sprite, False)
-    if hit:
-        Ball.hit(ball, players)
-
-    screen.fill(SCREEN_COL)
-    all_sprite.draw(screen)
-    pygame.display.update()
     
+    if pygame.sprite.groupcollide(ball, player1, False, False):
+        hit1 = True
+    else:
+        hit1 = False
+    if pygame.sprite.groupcollide(ball, player2, False, False):
+        hit2 = True
+    else:
+        hit2 = False
+    
+    player1.update()
+    player2.update()
+    ball.update(hit1, hit2)
+
+
+    screen.fill(SCR_COL)
+    player1.draw(screen)
+    player2.draw(screen)
+    ball.draw(screen)
+    pygame.display.update()
