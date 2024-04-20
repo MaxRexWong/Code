@@ -1,0 +1,45 @@
+import random
+while True:
+    list = ["apple", "orange", "banana", "peach", "avocado", "coconut", "watermelon"]
+    word = random.choice(list)
+    word2 = []
+    for char in word:
+        word2.append(char)
+    secret = []
+    lives = 7
+    for char in word:
+        secret.append("*")
+    print('Hangman game\nenjoy!')
+    while lives > 0:
+        for char in secret:
+            print(char+" ",end="")
+        while True:
+            ans = input()
+            if ans.isalpha() and len(ans) == 1:
+                break
+            else:
+                print("Please enter one letter")
+        if ans in word:
+            if ans in secret:
+                print("You have guessed this letter")
+                continue
+            for char in range(len(word)):
+                if ans == word[char]:
+                    secret[char] = ans
+        else:
+            lives -= 1
+            print(f"You have still have {lives} attempts")
+        if secret == word2:
+            break
+    if lives == 0:
+        print("You lose")
+    else:
+        print("You guess my word")
+    while True:
+        choice = input("Do you want to play again? (y/n)").lower()
+        if choice == "y":
+            break
+        elif choice == "n":
+            quit()
+        else:
+            print("Invalid input")
